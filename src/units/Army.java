@@ -1,0 +1,121 @@
+package units;
+
+import java.util.ArrayList;
+
+import exceptions.MaxCapacityException;
+
+
+public class Army{
+	private Status currentStatus;
+	private ArrayList<Unit> units;
+	private int distancetoTarget;
+	private String target;
+	private String currentLocation;
+	private final int maxToHold=10;
+    
+	public String information() {
+		String res="";
+		
+		res += " The army current status is "+ currentStatus 
+		     +"\n The number of units the army has is "+ units.size()+
+		     "\n The army currentlocation is "+ currentLocation ;
+		if(target.equals("")) {
+			res+= "\n The army doesn't have target ";
+		}
+		if(getCurrentStatus()==Status.MARCHING)
+			res+= "\n The Target City is"+ target
+			     +"\n There are " + this.distancetoTarget+ " turns till reaching"; 
+		else if(getCurrentStatus()==Status.BESIEGING) {
+			res+="\n The besieging city is "+ getCurrentLocation()+
+			     "\n The number of turns under besieging is ";
+		}
+		
+		return res;
+	}
+	
+	public Army(String currentLocation) {
+		this.currentLocation=currentLocation;
+		currentStatus=Status.IDLE;
+		units=new ArrayList<Unit>();
+		distancetoTarget=-1;
+		target="";
+		
+	}
+	
+	public void relocateUnit(Unit unit) throws MaxCapacityException
+	{
+		if(units.size()==maxToHold)
+			throw new MaxCapacityException("Maximum capacity reached");
+		units.add(unit);
+		unit.getParentArmy().units.remove(unit);
+		unit.setParentArmy(this);
+	}
+	
+	
+
+	public Status getCurrentStatus() {
+		return currentStatus;
+	}
+
+	public void setCurrentStatus(Status currentStatus) {
+		this.currentStatus = currentStatus;
+	}
+
+	public ArrayList<Unit> getUnits() {
+		return units;
+	}
+
+	public void setUnits(ArrayList<Unit> units) {
+		this.units = units;
+	}
+
+	public int getDistancetoTarget() {
+		return distancetoTarget;
+	}
+
+	public void setDistancetoTarget(int distancetoTarget) {
+		this.distancetoTarget = distancetoTarget;
+	}
+	public String getTarget() {
+		return target;
+	}
+	public void setTarget(String target) {
+		this.target = target;
+	}
+	public String getCurrentLocation() {
+		return currentLocation;
+	}
+	public void setCurrentLocation(String currentLocation) {
+		this.currentLocation = currentLocation;
+	}
+	
+	public int getMaxToHold() {
+		return maxToHold;
+	}
+	public double foodNeeded()
+	{
+		double sum=0;
+		for(Unit u: units)
+		{
+			if(currentStatus==Status.IDLE)
+				sum+=(u.getIdleUpkeep()*u.getCurrentSoldierCount());
+			else if(currentStatus==Status.MARCHING)
+				sum+=(u.getMarchingUpkeep()*u.getCurrentSoldierCount());
+			else 
+				sum+=(u.getSiegeUpkeep()*u.getCurrentSoldierCount());
+			
+		}
+		return sum;
+		
+	}
+	public void handleAttackedUnit(Unit u) {
+		if(u.getCurrentSoldierCount()<=0)
+		{
+			u.setCurrentSoldierCount(0);
+		units.remove(u);
+		}
+		
+	}
+	
+
+}
